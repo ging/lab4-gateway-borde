@@ -107,7 +107,7 @@ ps`; la primera vez puede tardar entre 30 y 40 segundos) y confirme que todo fun
 `http://localhost:8082/admin/master/console/`, que debe mostrar la pantalla de inicio de sesión de la
 consola de Keycloak.
 
-> **Pregunta.** Si Keycloak no publica ningún puerto, ¿cómo consigue el navegador llegar a su pantalla
+> **Pregunta 1.1.** Si Keycloak no publica ningún puerto, ¿cómo consigue el navegador llegar a su pantalla
 > de inicio de sesión?
 
 ---
@@ -138,7 +138,7 @@ lo demás— a través del puerto del *gateway*.
    docker compose up -d oauth2-proxy
    ```
 
-> **Pregunta.** ¿Por qué este cliente se declara **confidencial**, cuando el del laboratorio anterior
+> **Pregunta 2.1.** ¿Por qué este cliente se declara **confidencial**, cuando el del laboratorio anterior
 > era público?
 
 ---
@@ -172,10 +172,10 @@ la complejidad de la autenticación se ha quedado en el borde, en el *gateway*, 
 servicio interno. Y todo ello ha sucedido sin que Keycloak haya tenido en ningún momento un puerto
 abierto al exterior.
 
-> **Pregunta.** `whoami` recibe la identidad del usuario sin saber nada de OAuth. ¿Qué implicaría esto
+> **Pregunta 4.1.** `whoami` recibe la identidad del usuario sin saber nada de OAuth. ¿Qué implicaría esto
 > si en lugar de un `whoami` hubiera 50 microservicios distintos?
 
-> **Pregunta.** `whoami` da por buena la identidad que le llega en `X-Forwarded-User` sin comprobar
+> **Pregunta 4.2.** `whoami` da por buena la identidad que le llega en `X-Forwarded-User` sin comprobar
 > nada. ¿Qué ocurriría si alguien pudiera enviarle peticiones directamente, sin pasar por el
 > *gateway*? ¿Qué lo impide en este montaje, y qué más podría hacer el servicio para no fiarse a
 > ciegas?
@@ -207,11 +207,11 @@ del proveedor de identidad.
    docker compose start keycloak
    ```
 
-> **Pregunta.** Al modificar un solo carácter de la cookie, el *gateway* la rechaza. ¿Por qué no puede
+> **Pregunta 5.1.** Al modificar un solo carácter de la cookie, el *gateway* la rechaza. ¿Por qué no puede
 > un usuario fabricarse una cookie válida, por ejemplo con la identidad de otra persona? Relaciónelo
 > con el secreto generado en el apartado 1.
 
-> **Pregunta.** Detener Keycloak no afecta a quien ya tenía la sesión iniciada, pero sí impide
+> **Pregunta 5.2.** Detener Keycloak no afecta a quien ya tenía la sesión iniciada, pero sí impide
 > acceder a quien entra de nuevo. ¿A qué se debe esa diferencia?
 
 ---
