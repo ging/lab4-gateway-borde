@@ -107,8 +107,12 @@ ps`; la primera vez puede tardar entre 30 y 40 segundos) y confirme que todo fun
 `http://localhost:8082/admin/master/console/`, que debe mostrar la pantalla de inicio de sesión de la
 consola de Keycloak.
 
-> **Pregunta 1.1.** Si Keycloak no publica ningún puerto, ¿cómo consigue el navegador llegar a su pantalla
-> de inicio de sesión?
+> **Pregunta 1.1.** Mire el `docker-compose.yml`: el servicio `keycloak` no tiene sección `ports:`, así
+> que no publica ningún puerto en su equipo. El único puerto publicado es el 8082, y pertenece a
+> `oauth2-proxy`. Aun así, la consola de Keycloak responde en `http://localhost:8082/admin/...`, y su
+> pantalla de inicio de sesión aparecerá más adelante en `http://localhost:8082/realms/...`. ¿Cómo
+> consigue el navegador llegar a Keycloak? Busque en el propio `docker-compose.yml` las opciones de
+> `oauth2-proxy` que lo explican.
 
 ---
 
@@ -192,10 +196,26 @@ En esta arquitectura el navegador no tiene ningún *token* que manipular; lo que
 de sesión** del *gateway*. La verificación actúa, por tanto, sobre esa cookie y sobre la dependencia
 del proveedor de identidad.
 
-1. **Manipular la cookie:** DevTools → **Application** (en Firefox, **Almacenamiento**) → **Cookies**
-   → localice la cookie `_oauth2_proxy` → modifique un carácter cualquiera de su valor → recargue
-   `http://localhost:8082/`. El *gateway* vuelve a tratar la petición como si no hubiera sesión y
-   redirige al inicio de sesión de Keycloak. Inicie sesión de nuevo como `diego` antes de seguir.
+1. **Manipular la cookie:** abra DevTools → pestaña **Network** (en Firefox, **Red**) con **Preserve
+   log** marcado (en Firefox, **Persist Logs**). Después, en **Application** (en Firefox,
+   **Almacenamiento**) → **Cookies**, localice la cookie `_oauth2_proxy`, modifique un carácter
+   cualquiera de su valor y recargue `http://localhost:8082/`.
+
+   A simple vista no ocurre nada: `whoami` vuelve a responder. La pestaña de red muestra lo que ha
+   pasado por debajo:
+   - La petición a `/` responde con un **302**: el *gateway* ha rechazado la cookie, trata la petición
+     como si no hubiera sesión y le envía a iniciar sesión en Keycloak (`.../openid-connect/auth`).
+   - Keycloak no pide la contraseña. Diego conserva su **propia sesión con Keycloak**, guardada en
+     otras cookies distintas de la del *gateway*, así que Keycloak le reconoce y devuelve al momento un
+     `code` nuevo.
+   - La petición a `/oauth2/callback` canjea ese `code`, y su respuesta trae un `Set-Cookie` con una
+     cookie `_oauth2_proxy` **nueva**. Compruébelo en **Application**: el valor ya no es el que
+     modificó.
+
+> **Pregunta 5.1.** Al modificar un solo carácter de la cookie, el *gateway* la rechaza. ¿Por qué no puede
+> un usuario fabricarse una cookie válida, por ejemplo con la identidad de otra persona? Relaciónelo
+> con el secreto generado en el apartado 1.
+
 2. **Detener el proveedor de identidad:**
    ```bash
    docker compose stop keycloak
@@ -205,15 +225,6 @@ del proveedor de identidad.
    - Abra una ventana de incógnito **nueva** y acceda a `http://localhost:8082/`: el *gateway*
      intenta llevarle al inicio de sesión, pero la respuesta es un error **502**, porque esa pantalla
      la sirve Keycloak, que ya no está disponible.
-
-   Vuelva a arrancarlo a continuación:
-   ```bash
-   docker compose start keycloak
-   ```
-
-> **Pregunta 5.1.** Al modificar un solo carácter de la cookie, el *gateway* la rechaza. ¿Por qué no puede
-> un usuario fabricarse una cookie válida, por ejemplo con la identidad de otra persona? Relaciónelo
-> con el secreto generado en el apartado 1.
 
 > **Pregunta 5.2.** Detener Keycloak no afecta a quien ya tenía la sesión iniciada, pero sí impide
 > acceder a quien entra de nuevo. ¿A qué se debe esa diferencia?
