@@ -125,6 +125,10 @@ lo demás— a través del puerto del *gateway*.
    > `/admin/*` está exenta de requerir su sesión. La consola de Keycloak tiene su propio inicio de
    > sesión, independiente del que se va a montar para proteger `whoami`.
 
+   > **Nota.** La consola se abre en el realm `master`. Cambie al realm `curso` desde el menú lateral
+   > → **Manage realms** → `curso`, y compruebe que arriba a la izquierda aparece `curso` *Current realm*.
+   > Si crea el cliente en `master`, el inicio de sesión fallará porque el realm no es el correcto.
+
 2. **Cree el cliente confidencial:** realm `curso` → **Clients** → **Create client**.
    - Client ID = `gateway` → Next.
    - **Client authentication = ON** (confidencial, con secreto), **Standard flow = ON**, resto OFF →
